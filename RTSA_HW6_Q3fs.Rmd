@@ -1,0 +1,134 @@
+---
+title: "Regression and Time Series Analysis HW 6"
+output: html_notebook
+author: "Varshini Yanamandra"
+---
+```{r}
+# libraries
+library(MASS)
+library(car)
+
+# loading data
+myData = swiss
+head(myData)
+```
+FORWARD SELECTION
+```{r}
+# intercept model
+mod0 <- lm(Fertility ~ 1, myData)
+#summary(mod0)
+AIC(mod0)
+```
+```{r}
+# one regressor - Agriculture, Examination, Education, Catholic, Infant.Mortality
+mod1 <- lm(Fertility ~ Agriculture, myData)
+#linearHypothesis(mod1, "Agriculture = 0")
+
+mod2 <- lm(Fertility ~ Examination, myData)
+#linearHypothesis(mod2, "Examination = 0")
+
+mod3 <- lm(Fertility ~ Education, myData)
+#linearHypothesis(mod3, "Education = 0")
+
+mod4 <- lm(Fertility ~ Catholic, myData)
+#linearHypothesis(mod4, "Catholic = 0")
+
+mod5 <- lm(Fertility ~ Infant.Mortality, myData)
+#linearHypothesis(mod5, "Infant.Mortality = 0")
+
+print(c(AIC(mod1), AIC(mod2), AIC(mod3), AIC(mod4), AIC(mod5)))
+```
+Education minimizes the AIC the most. Adding Education to the model.
+```{r}
+# model with one regressor set. The remaining regressors are Agriculture, Examination, Catholic, Infant.Mortality
+onevar_mod1 <- lm(Fertility ~ Education + Agriculture, myData)
+#linearHypothesis(onevar_mod1, "Agriculture = 0")
+
+onevar_mod2 <- lm(Fertility ~ Education + Examination, myData)
+#linearHypothesis(onevar_mod2, "Examination = 0")
+
+onevar_mod3 <- lm(Fertility ~ Education + Catholic, myData)
+#linearHypothesis(onevar_mod3, "Catholic = 0")
+
+onevar_mod4 <- lm(Fertility ~ Education + Infant.Mortality, myData)
+#linearHypothesis(onevar_mod4, "Infant.Mortality = 0")
+
+print(c(AIC(onevar_mod1), AIC(onevar_mod2), AIC(onevar_mod3), AIC(onevar_mod4)))
+```
+Catholic minimizes AIC the most, so adding Catholic to the model as a regressor.
+```{r}
+# model with two regressors set. The remaining regressors are Agriculture, Examination, Infant.Mortality.
+twovar_mod1 <- lm(Fertility ~ Education + Catholic + Agriculture, myData)
+#linearHypothesis(twovar_mod1, "Agriculture = 0")
+
+twovar_mod2 <- lm(Fertility ~ Education + Catholic + Examination, myData)
+#linearHypothesis(twovar_mod2, "Examination = 0")
+
+twovar_mod3 <- lm(Fertility ~ Education + Catholic + Infant.Mortality, myData)
+#linearHypothesis(twovar_mod3, "Infant.Mortality = 0")
+
+print(c(AIC(twovar_mod1), AIC(twovar_mod2), AIC(twovar_mod3)))
+```
+Infant.Mortality minimizes AIC the most, so Infant.Mortality is added to the model.
+```{r}
+# model with three regressors set. The remaining regressors are Agriculture, Examination.
+threevar_mod1 <- lm(Fertility ~ Education + Catholic + Infant.Mortality + Agriculture, myData)
+#linearHypothesis(threevar_mod1, "Agriculture = 0")
+
+threevar_mod2 <- lm(Fertility ~ Education + Catholic + Infant.Mortality + Examination, myData)
+#linearHypothesis(threevar_mod2, "Examination = 0")
+
+print(c(AIC(threevar_mod1), AIC(threevar_mod2)))
+```
+Agriculture minimizes AIC the most, so adding Agriculture as a regressor to the model.
+```{r}
+# model with four regressors set. The only remaining regressor is Examination.
+fourvar_mod <- lm(Fertility ~ Education + Catholic + Infant.Mortality + Agriculture + Examination, myData)
+#linearHypothesis(fourvar_mod, "Examination = 0")
+
+print(AIC(fourvar_mod))
+```
+Since the AIC for the model with Examination increases than for the previous step, we do not add it. We are finished with the forward selection process. Our final model is (Fertility ~ Education + Catholic + Infant.Mortality + Agriculture).
+```{r}
+# final model
+myModel <- lm(Fertility ~ Education + Catholic + Infant.Mortality + Agriculture, myData)
+summary(myModel)
+AIC(myModel)
+```
+
+BACKWARD ELIMINATION
+```{r}
+# full model
+be_mod0 <- lm(Fertility ~ ., myData)
+summary(be_mod0)
+AIC(be_mod0)
+```
+
+
+```{r}
+# eliminating first variable
+be1mod1 = update(be_mod0, .~. -Agriculture)
+be1mod2 = update(be_mod0, .~. -Examination)
+be1mod3 = update(be_mod0, .~. -Education)
+be1mod4 = update(be_mod0, .~. -Catholic)
+be1mod5 = update(be_mod0, .~. -Infant.Mortality)
+
+print(c(AIC(be1mod1), AIC(be1mod2), AIC(be1mod3), AIC(be1mod4), AIC(be1mod5)))
+```
+The model with Examination eliminated (be1mod2) is the only one with AIC lesser than the full model, so we eliminate Examination.
+```{r}
+# eliminating second variable
+be2mod1 = update(be1mod2, .~. - Agriculture)
+be2mod2 = update(be1mod2, .~. - Education)
+be2mod3 = update(be1mod2, .~. - Catholic)
+be2mod4 = update(be1mod2, .~. - Infant.Mortality)
+
+print(c(AIC(be2mod1), AIC(be2mod2), AIC(be2mod3), AIC(be2mod4)))
+```
+All the AICs are greater than the AIC of the model in the previous step, so we stop the process here. Our final model is (Fertility ~ Agriculture + Education + Catholic + Infant.Mortality), which is the same result as achieved from forward selection.
+```{r}
+# final model
+myFinalModel = be1mod2
+summary(myFinalModel)
+```
+

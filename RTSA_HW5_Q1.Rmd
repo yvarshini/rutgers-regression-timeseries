@@ -1,0 +1,118 @@
+---
+title: "RTSA HW5 Q1 - Varshini Yanamandra"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+```{r}
+# Installing required libraries
+library(HistData)
+library(multcomp) # for linear hypotheses with inequalities
+
+# Loading data
+myData = HistData::GaltonFamilies
+head(myData)
+```
+```{r}
+# Y1 - childHeight
+# X1 - father
+# X2 - mother
+# X3 - gender
+
+myData$gender <- as.factor(myData$gender)
+myData$gender <- as.numeric(myData$gender) -1
+# Converting gender to 1 if male, 0 if female
+head(myData)
+
+# Creating a multiple linear regression model
+myModel <- lm(childHeight ~ father + mother + gender, data = myData)
+summary(myModel)
+```
+Given: alpha = 0.01
+
+Part (a)
+Null hypothesis: father = mother = gender = 0
+Alternate hypothesis: father != 0 or mother != 0 or gender != 0
+Here, we are aiming to reject the null hypothesis if researcher A's claim is true.
+```{r}
+# Part a
+a <- matrix(c(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1), nrow = 3)
+c <- c(0, 0, 0)
+linearHypothesis(myModel, a, c, data = myData)
+```
+The test statistic (F statistic) is 540.26.
+The p-value for this test is 2.2e-16, which is much smaller than 0.01, so the null hypothesis is rejected. This means that the childHeight depends on either the father's height, mother's height or the gender.
+
+Part (b)
+Null hypothesis: gender = 0
+Alternate hypothesis: gender != 0
+Here, we are aiming to reject the null hypothesis if researcher B's claim is true.
+```{r}
+# Part b
+linearHypothesis(myModel, "1*gender = 0", data = myData)
+```
+
+The test statistic (F statistic) is 1352.4.
+The p-value for this test is 2.2e-16, which is much smaller than 0.01, so the null hypothesis is rejected. This means that boys and girls have different heights.
+
+Part (c)
+Null hypothesis: gender >= 0
+Alternate hypothesis: gender < 0
+Here, we are aiming to reject the null hypothesis if researcher C's claim is true.
+```{r}
+# Part c
+hyp_c <- glht(model = myModel, linfct = "gender >= 0")
+summary(hyp_c)
+```
+The test statistic (t statistic) is 36.77.
+The p-value for this test is 1, which is greater than 0.01, so we fail to reject the null hypothesis. This means that girls are not taller than boys.
+
+Part (d)
+Null hypothesis: mother - father <= 0
+Alternate hypothesis: mother - father > 0
+Here, we are aiming to reject the null hypothesis if researcher D's claim is true.
+```{r}
+# Part d
+hyp_d <- glht(model = myModel, linfct = "mother - father <= 0")
+summary(hyp_d)
+```
+The test statistic (t statistic) is -1.731.
+The p-value for the test is 0.958, which is greater than 0.01, so we fail to reject the null hypothesis. This means that mother's height does not have a larger effect than father's height on childHeight.
+
+Part (e)
+Null hypothesis: father = mother = 0
+Alternate hypothesis: father != 0 or mother != 0
+Here, we are aiming to reject the null hypothesis if researcher E's claim is true.
+```{r}
+# Part e
+a <- matrix(c(0, 0, 1, 0, 0, 1, 0, 0), nrow = 2)
+c <- c(0, 0)
+linearHypothesis(myModel, a, c, data = myData)
+```
+The test statistic (F statistic) is 155.26.
+The p-value for this test is 2.2e-16, which is much smaller than 0.01, so the null hypothesis is rejected. Hence, the childHeight is associated with at least one of mother's height or father's height.
+
+Part (f)
+Null hypothesis: father = mother = 0
+Alternate hypothesis: father != 0 or mother != 0
+Here, we are aiming to fail to reject the null hypothesis if researcher F's claim is true.
+```{r}
+# Part f
+a <- matrix(c(0, 0, 1, 0, 0, 1, 0, 0), nrow = 2)
+c <- c(0, 0)
+linearHypothesis(myModel, a, c, data = myData)
+```
+The test statistic (F statistic) is 155.26.
+The p-value for this test is 2.2e-16 which is much smaller than 0.01, so the null hypothesis is rejected. Hence, the childHeight has some relationship with at least one of the father's height or the mother's height.
+
+Part(g)
+Null hypothesis: father - mother = 0
+Alternate hypothesis: father - mother != 0
+Here, we are aiming to fail to reject the null hypothesis if researcher G's claim is true.
+```{r}
+# Part g
+linearHypothesis(myModel, "1*father - 1*mother = 0", data = myData)
+```
+The test statistic (F statistic) is 2.9953.
+The p-value for this test is 0.08384, which is greater than both 0.01, so we fail to reject the null hypothesis. This means that both the father's height and the mother's height have approximately equal influence on childHeight.

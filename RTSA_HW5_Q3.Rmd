@@ -1,0 +1,105 @@
+---
+title: "RTSA HW5 Q3 - Varshini Yanamandra"
+output: html_notebook
+---
+
+```{r}
+# Required libraries
+library(faraway)
+library(lmtest)
+
+myData = faraway::sat
+head(myData)
+```
+```{r}
+dim(myData)
+```
+
+Part (a)
+```{r}
+myModel <- lm(total ~ expend + salary + ratio + takers, data = myData)
+summary(myModel)
+```
+```{r}
+# Partial regression for expend
+d <- residuals(lm(total ~ salary + ratio + takers, myData))
+m <- residuals(lm(expend ~ salary + ratio + takers, myData))
+plot(m, d, xlab = "expend residuals", ylab = "total residuals", main = "partial regression for expend")
+abline(0, coef(myModel)["expend"])
+```
+Non-linear
+```{r}
+# Partial regression for salary
+d <- residuals(lm(total ~ expend + ratio + takers, myData))
+m <- residuals(lm(salary ~ expend + ratio + takers, myData))
+plot(m, d, xlab = "salary residuals", ylab = "total residuals", main = "partial regression for salary")
+abline(0, coef(myModel)["salary"])
+```
+Non-linear
+```{r}
+# Partial regression for ratio
+d <- residuals(lm(total ~ salary + expend + takers, myData))
+m <- residuals(lm(ratio ~ salary + expend + takers, myData))
+plot(m, d, xlab = "ratio residuals", ylab = "total residuals", main = "partial regression for ratio")
+abline(0, coef(myModel)["ratio"])
+```
+Non-linear
+```{r}
+# Partial regression for takers
+d <- residuals(lm(total ~ salary + ratio + expend, myData))
+m <- residuals(lm(takers ~ salary + ratio + expend, myData))
+plot(m, d, xlab = "takers residuals", ylab = "total residuals", main = "partial regression for takers")
+abline(0, coef(myModel)["takers"])
+```
+Linear
+
+Part (b)
+```{r}
+plot(myModel)
+shapiro.test(residuals(myModel))
+dwtest(myModel)
+```
+Part (c)
+```{r}
+myModel2 <- lm(total ~ expend + salary^2 + ratio + takers, data = myData)
+summary(myModel2)
+plot(myModel2)
+shapiro.test(residuals(myModel2))
+dwtest(myModel2)
+```
+```{r}
+myModel3 <- lm(total ~ expend + salary + ratio + takers^2, data = myData)
+summary(myModel3)
+plot(myModel3)
+shapiro.test(residuals(myModel3))
+dwtest(myModel3)
+```
+```{r}
+myModel4 <- lm(total ~ expend + salary + ratio^2 + takers^3, data = myData)
+summary(myModel4)
+plot(myModel4)
+shapiro.test(residuals(myModel4))
+dwtest(myModel4)
+```
+All the transforms till now have had no effect on the linear model - the parameters in the summary remain unchanged from the original model (myModel).
+There is no use in performing broken-stick regression as there is no discontinuity in the slopes of any of the regressors.
+
+Part (d)
+```{r}
+# Performing Box-Cox transformation to make the residuals have zero variance
+l <- boxcox(myModel, lambda = seq(-6, 2, 0.1))
+
+# Extracting lambda
+lambda <- l$x[which.max(l$y)]
+lambda
+
+# Transforming the y variable (zinc)
+myTransformedModel <- lm((zinc^lambda - 1)/lambda ~ dist + elev, data = Meusedata)
+summary(myTransformedModel)
+plot(myTransformedModel)
+```
+```{r}
+plot(myTransformedModel)
+shapiro.test(residuals(myTransformedModel))
+dwtest(myTransformedModel)
+```

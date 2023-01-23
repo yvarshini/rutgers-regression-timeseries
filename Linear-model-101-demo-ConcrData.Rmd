@@ -1,0 +1,109 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+library(readxl)
+library(car)
+```
+```{r}
+ConcrtData = read_excel(file.choose())
+head(ConcrtData)
+```
+```{r}
+names(ConcrtData) = c("Cement", "BFSlag", "FlyAsh", "Water", "SupPlast", "CoAgg", "FinAgg", "Age", "ConcCompStr")
+names(ConcrtData)
+```
+```{r}
+model_1 = lm(ConcCompStr ~ Cement + BFSlag + FlyAsh, data = ConcrtData)
+summary(model_1)
+```
+```{r}
+coef(model_1)
+```
+```{r}
+linearHypothesis(model_1, "1*Cement - 1*BFSlag = 0") #linearHypothesis(name-of-model, hypothesis)
+
+linearHypothesis(model_1, "1*Cement = 0.1")
+
+# Reject H0 if p<0.05
+
+# How to test using beta_0?
+```
+```{r}
+hypoMat <- c(0, 1, -1, 0)
+cMat <- c(0)
+
+linearHypothesis(model_1, hypoMat, cMat)
+```
+```{r}
+hypoMat <- matrix(c(1, -7, 1, 0), nrow = 1)
+cMat <- c(0)
+linearHypothesis(model_1, hypoMat, cMat) # Part 1
+# H1: beta_0 -7*beta_1 + beta_2 != 0
+# Reject H0 (6.818e-08) at 99% confidence
+```
+
+
+```{r}
+linearHypothesis(model_1, "FlyAsh = 0") # Part 2
+# H1: beta_3 != 0
+# Reject H0 (<2.26e-16) at 99% confidence
+```
+
+
+```{r}
+hypoMat <- c(0, 1, -1, 0)
+cMat <- 1
+linearHypothesis(model_1, hypoMat, cMat) # Part 3
+# H1: beta_1 - beta_2 != 1
+# Reject H0 (<2.26e-16) at 99% confidence
+```
+
+
+```{r}
+hypoMat <- c(1,1,1,1)
+cMat = c(0)
+linearHypothesis(model_1, hypoMat, cMat) # Part 4
+# H1: beta_1 + beta_2 + beta_3 != -beta_0
+# Reject H0 (7.105e-07) at 99% confidence
+```
+```{r}
+hypoMat <- matrix(c(0, 0, 1, 0, 0, 1, 0, 0), nrow = 2) # Give the data column-wise
+hypoMat
+cMat <- matrix(c(0, 0), nrow = 2)
+cMat
+
+linearHypothesis(model_1, hypoMat, cMat)
+```
+```{r}
+hypoMat <- matrix(c(-1, 0, 0, 1, 1, 1, 0, -1, 0, 0, 0, -2), nrow = 3)
+cMat <- c(0, 0, 0)
+qr(hypoMat)$rank
+require(Matrix)
+rankMatrix(hypoMat)
+
+linearHypothesis(model_1, hypoMat, cMat) # Part 3
+```
+```{r}
+a <- matrix(c(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1), nrow = 4)
+c <- c(0,0,0,0)
+linearHypothesis(model_1, a, c) # Part 1
+```
+```{r}
+a <- matrix(c(1,0,0,0,1,0,0,0,1,0,0,-7), nrow = 3)
+c <- c(0,7,0)
+linearHypothesis(model_1, a, c) # Part 2
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+

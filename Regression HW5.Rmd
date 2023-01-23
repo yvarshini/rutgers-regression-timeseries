@@ -1,0 +1,217 @@
+---
+title: "Regression HW5"
+author: "Cheryl Allen-Munley"
+date: '2022-11-03'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(readxl)	
+library(car)
+library(carData)
+library(sp)
+library(gstat)
+library(MASS)
+library(faraway)
+library(HistData)
+
+```
+
+
+```{r}
+#Problem 1
+#Examine GaltonFamily Data
+data("GaltonFamilies")
+Heightdata <- GaltonFamilies
+head(Heightdata)				
+
+```
+
+```{r}
+#Problem 1
+
+#Convert gender to numeric factor female = 1. male = 0
+Heightdata$g_num <- factor(Heightdata$gender)
+Heightdata$g_num<-abs(unclass(Heightdata$g_num) - 2)
+head(Heightdata)				
+
+#Fitting a linear regression model fitting the response variable childHeight (Y) to father, mother and g_num (numeric transformation of gender)
+model_height=lm(childHeight ~ father + mother + g_num, data = Heightdata)	
+summary(model_height)
+```
+
+```{r}
+#Problem 1a
+#Performing hypothesis test on B1 = B2 = B3 = 0
+Hypo_a <- matrix(c(0,0,0,1, 0,0,0,1,0,0,0,1), nrow = 3)
+cMat_a <- c(0,0,0)
+linearHypothesis(model_height,Hypo_a,cMat_a)
+```
+
+```{r}
+#Problem 1b
+#Performing hypothesis test on B3 = 0
+Hypo_b<-c(0,0,0,1)
+c=0
+linearHypothesis(model_height,Hypo_b,c)
+```
+
+```{r}
+#Problem 1c
+#Performing hypothesis test on B3 > 0
+#Can't figure out how to perform hypothesis inequalities
+#linearHypothesis(model_height, c("g_num >0"))
+```
+
+```{r}
+#Problem 1d
+#Linear Hypothesis B2>B3
+
+#linearHypothesis(model_height, c("father>mather"))
+```
+
+
+```{r}
+#Problem 1e
+#Linear Hypothesis B2 + B3 =0
+
+linearHypothesis(model_height, c("father + mother = 0"))
+```
+
+
+```{r}
+#Problem 1f
+#Linear Hypothesis B1 + B2 =0
+#could not figure out how to evaluate "non-equal" null hypothesis
+linearHypothesis(model_height, c("father = 0", "mother = 0"))
+```
+
+
+```{r}
+#Problem 1g
+#Linear Hypothesis B2 not equal B3 =0
+#could not figure out how to test a "non-equal" null hypothesis.
+linearHypothesis(model_height, c("father = mother"))
+```
+
+
+```{r}
+#Problem 2
+#Examine Sat Data
+data("sat")
+satdata <- sat
+
+head(satdata)					#Seeing the first few rows of the data
+
+```
+
+```{r}
+#Problem 2a
+#Fitting a linear regression model fitting the response variable total (Y) to expend, ratio, salary, takers.
+model_sat=lm(total ~ expend + ratio + + salary + takers, data = satdata)				
+summary(model_sat)
+```
+```{r}
+#Problem 2b
+hatv <- hatvalues(model_sat)
+head(sort(hatv, decreasing = T))
+sum(hatv)
+halfnorm(hatv, 3, labs=state.name, ylab = "hatvalue")
+```
+```{r}
+#Problem 2c
+stud <- rstudent(model_sat)
+jackres <- stud *(44/(45-stud^2))^0.5
+head(jackres[order(abs(stud),decreasing = T)]) 
+qt(0.25/50,44)
+cook <- cooks.distance(model_sat)
+halfnorm(cook, 3, labs = state.name, ylab = "Cook's Distance")
+```
+
+```{r}
+#Problem 2d
+x<- model.matrix(model_sat)[,-1]
+vif(x)
+```
+
+```{r}
+#Problem 3a - Partial Residual Expend
+d <- residuals(lm(total ~ ratio +salary + takers, data = satdata))
+m <- residuals(lm(expend ~ ratio +salary + takers, data = satdata))
+plot(m,d,xlab="expend residuals", ylab="sat total residuals")
+lmod <- lm(total ~ expend + ratio +salary + takers, data = satdata)
+abline(0,coef(lmod)['expend'])
+termplot(lmod,partial.resid = TRUE, terms=1)
+
+```
+
+```{r}
+#Problem 3a - Partial Residual Ratio
+d <- residuals(lm(total ~ expend +salary + takers, data = satdata))
+m <- residuals(lm(ratio ~ expend +salary + takers, data = satdata))
+plot(m,d,xlab="ratio residuals", ylab="sat total residuals")
+lmod <- lm(total ~ expend + ratio +salary + takers, data = satdata)
+abline(0,coef(lmod)['ratio'])
+termplot(lmod, partial.resid = TRUE, terms=2)
+
+```
+
+```{r}
+#Problem 3a - Partial Residual Salary
+d <- residuals(lm(total ~ expend + ratio + takers, data = satdata))
+m <- residuals(lm(salary ~ expend + ratio + takers, data = satdata))
+plot(m,d,xlab="salary residuals", ylab="sat total residuals")
+lmod <- lm(total ~ expend + ratio +salary + takers, data = satdata)
+abline(0,coef(lmod)['salary'])
+termplot(lmod,partial.resid = TRUE, terms=3)
+
+```
+
+```{r}
+#Problem 3a - Partial Residual Takers
+d <- residuals(lm(total ~ expend + ratio +salary, data = satdata))
+m <- residuals(lm(takers ~ expend + ratio +salary, data = satdata))
+plot(m,d,xlab="takers residuals", ylab="sat total residuals")
+lmod <- lm(total ~ expend + ratio +salary + takers, data = satdata)
+abline(0,coef(lmod)['takers'])
+termplot(lmod,partial.resid = TRUE, terms=4)
+
+```
+
+```{r}
+#Problem 3b
+#Obtain Q-Q plot of the residuals
+plot(model_sat)
+
+```
+
+
+Part 2
+
+Examining the residual plot versus the fitted values clearly illustrates that in addition to the data not being normally distributed, the other  assumptions for conducting a linear regression are violated:
+  1. The mean of the residual is not 0.  
+  2. The shape of the scatter plot is non-linear, suggesting a non-linear     correlation, and:
+  3. The relationship is heteroskedastic with the variances at the extreme values of Y hat positive and the noise variance in the mid levels negative.
+
+Part 3
+It appears of all suggested values, lambda = -0.34 is best.  To find optimum lambda value using R's boxcox feature, lambda of -0.3838384 is selected.
+
+```{r}
+#Problem 3d - Perform BoxCox transformation with optimum lambda
+opt_lambda <- boxcox(model_sat)
+lambda <- opt_lambda$x[which.max(opt_lambda$y)]
+lambda
+# Refit model with Performing BoxCox transformation.
+model_opt <- lm((total^lambda - 1)/lambda ~ expend + ratio + salary + takers, data = satdata)
+summary(model_opt)
+plot(model_opt)
+
+```
+
+Examining the resulting Q-Q plot with a BoxCox transformation of lambda= -0.3838384, we can see the desirable s-shaped curve indicating with light tail noise.  Comparing transformed model to the original, we see R^2 has improved from 0.505 to 0.6714.
+

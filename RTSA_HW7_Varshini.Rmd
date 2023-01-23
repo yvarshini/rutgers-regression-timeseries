@@ -1,0 +1,64 @@
+---
+title: "RTSA HW 7"
+output: html_notebook
+author: "Varshini Yanamandra"
+---
+
+QUESTION 3
+The answers to part (c) - the observations - are written in the bottom of each graph.
+
+```{r}
+# part a
+set.seed(12345)
+y1 = arima.sim(model = list(ar=0.6), n = 100)
+par(mar=c(5,4,4,2))
+acf(y1, main = 'Autocorrelations', lag.max = 99, ci.col = 'black')
+acf(y1, main = 'Autocorrelations', lag.max = 10, ci.col = 'black')
+```
+```{r}
+# part b
+set.seed(12345)
+y2 = arima.sim(model = list(ar=-0.6), n = 100)
+par(mar=c(5,4,4,2))
+acf(y2, main = 'Autocorrelations', lag.max = 99, ci.col = 'black')
+acf(y2, main = 'Autocorrelations', lag.max = 30, ci.col = 'black')
+```
+```{r}
+# part c
+set.seed(12345)
+y3 = arima.sim(model = list(ar=0.95), n = 100)
+par(mar=c(5,4,4,2))
+acf(y3, main = 'Autocorrelations', lag.max = 99, ci.col = 'black')
+acf(y3, main = 'Autocorrelations', lag.max = 70, ci.col = 'black')
+```
+```{r}
+# part d
+set.seed(12345)
+y4 = arima.sim(model = list(ar=0.3), n = 100)
+par(mar=c(5,4,4,2))
+acf(y4, main = 'Autocorrelations', lag.max = 99, ci.col = 'black')
+acf(y4, main = 'Autocorrelations', lag.max = 10, ci.col = 'black')
+```
+Observations:
+The lag until when the ACF is significantly distant from 0 increases as the absolute value of phi increases and decreases as the absolute value of phi decreases, as seen from these four examples.
+
+QUESTION 4
+
+The stationary processes are the processes in parts (a) and (b).
+```{r}
+# part a
+set.seed(12345)
+y1 = arima.sim(model = list(ar=c(-0.2, 0.48)), n = 100)
+par(mar=c(5,4,4,2))
+acf(y1, main = 'Autocorrelations', lag.max = 30, ci.col = 'black')
+pacf(y1, main = "Partial ACFs", lag.max = 30, ci.col = 'black')
+```
+```{r}
+# part b
+set.seed(12345)
+y2 = arima.sim(model = list(ar=c(-0.6), ma=c(1.2)), n = 100)
+par(mar=c(5,4,4,2))
+acf(y2, main = 'Autocorrelations', lag.max = 30, ci.col = 'black')
+pacf(y2, main = "Partial ACFs", lag.max = 30, ci.col = 'black')
+```
+

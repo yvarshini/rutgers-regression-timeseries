@@ -1,0 +1,85 @@
+---
+title: "RTSA HW 8"
+output: html_notebook
+author: "Varshini Yanamandra"
+---
+Question 3
+
+```{r}
+# loading packages for question 3
+library(ggfortify)
+```
+```{r}
+data("AirPassengers")
+myData <- AirPassengers
+class(myData) # confirming it is a time-series dataset
+myData
+```
+```{r}
+# time series plot
+ts.plot(myData) # way 1
+autoplot(myData) # way 2
+```
+```{r}
+# acf plot
+par(mar=c(5,4,4,2))
+acf(myData, main = "Autocorrelation", lag.max = 160)
+acf(myData)
+```
+```{r}
+# fitting an ARMA(1, 1) model to the data
+ARMA_model <- arima(myData, order = c(1, 0, 1))
+print(ARMA_model)
+ts.plot(myData)
+ARMA_fit <- myData - resid(ARMA_model)
+points(ARMA_fit, type = "l", col = 2, lty = 2)
+```
+The model has been fitted very well with the fitted values being very close to the actual values. However, there is a forward lag in the fitted values, as in, the trend (graph) of the fitted values is leading the trend of the actual data by a small value.
+
+Question 4
+
+```{r}
+data("sunspots")
+sunData <- sunspots
+class(sunData) # confirming it is a time-series dataset
+```
+```{r}
+# time series plot
+ts.plot(sunData)
+```
+```{r}
+# acf plot
+par(mar=c(5,4,4,2))
+acf(sunData, main = "Autocorrelation", lag.max = 10000)
+acf(sunData)
+```
+```{r}
+# fitting an ARIMA(0, 1, 1) model to the data
+IMA_model <- arima(sunData, order = c(0, 1, 1))
+print(IMA_model)
+ts.plot(myData)
+IMA_fit <- myData - resid(IMA_model)
+points(IMA_fit, type = "l", col = 2, lty = 2)
+```
+```{r}
+# fitting an ARIMA(1, 1, 0) model to the data
+ARI_model <- arima(sunData, order = c(1, 1, 0))
+print(ARI_model)
+ts.plot(myData)
+ARI_fit <- myData - resid(ARI_model)
+points(ARI_fit, type = "l", col = 2, lty = 2)
+```
+```{r}
+# AIC of the two models - the same as what is given in the summary tables for the models
+ima_aic = AIC(IMA_model)
+ari_aic = AIC(ARI_model)
+ima_aic
+ari_aic
+```
+As the ARIMA(0,1,1) model has a lower AIC, it would be better to pick that model based on AIC alone.
+```{r}
+# Ljung-Box test
+Box.test(IMA_model$residuals, lag = 12 ,type = "Ljung", fitdf = 2)
+```
+The p-value is much smaller than 0.05 (5% significance), so we can say that the residuals are not independent (and are correlated) by rejecting the null hypothesis.
+At 5% significance, the null hypothesis (that the residuals are not correlated) is rejected, meaning at least of the correlations is non-zero for the residuals.

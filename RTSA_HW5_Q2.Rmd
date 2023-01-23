@@ -1,0 +1,70 @@
+---
+title: "RTSA HW5 Q2 - Varshini Yanamandra"
+output: html_notebook
+---
+
+```{r}
+# Installing required libraries
+library(faraway)
+library(MASS)
+
+# Loading data
+myData = faraway::sat
+head(myData)
+```
+```{r}
+dim(myData)
+```
+
+Part (a)
+```{r}
+# Creating the multiple linear regression model
+myModel <- lm(total ~ expend + salary + ratio + takers, data = myData)
+summary(myModel)
+```
+
+Part (b)
+```{r}
+hatv = hatvalues(myModel)
+head(sort(hatv, decreasing = T))
+sum(hatv)
+```
+There are 50 rows (n = 50) and 4 regressors (p = 4)
+Hence, a point is influential if its leverage is > 2*(p+1)/n = 0.2
+There are 4 states with leverage value > 0.2
+```{r}
+# Half normal plot
+halfnorm(hatv, nlab = 4, labs = state.name, ylab = "Hat Value")
+```
+
+Part (c)
+```{r}
+# jackknife residuals or studentised residuals
+#jkres <- studres(myModel)
+#head(jkres[order(abs(jkres), decreasing = T)])
+stud <- rstudent(myModel)
+jkres <- stud*(44/(45-stud^2))^0.5
+head(jkres[order(abs(stud), decreasing = T)])
+```
+
+```{r}
+# Bonferroni correction
+qt(0.025/50, 44)
+```
+The largest outlier, West Virginia, is not significant at the 5% level as -3.491336 is greater than -3.525801.
+
+Part (d)
+```{r}
+cook <- cooks.distance(myModel)
+head(sort(cook, decreasing = T))
+halfnorm(cook, 3, labs=state.name, ylab = "Cook's Distances")
+```
+The Cook's distance for Utah is much greater than the state with the next highest Cook's distance (West Virginia). However, since none of the states have a Cook's distance > 1, they can be considered non-influential.
+
+Part (e)
+```{r}
+vif_values <- vif(myModel)
+vif_values
+mean(vif_values)
+```
+While the greatest VIP (expend) is not > 10, the mean VIF is 5.717713, which is much greater than 5. This suggests a good chance of multicollinearity.

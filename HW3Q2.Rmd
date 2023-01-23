@@ -1,0 +1,59 @@
+---
+title: "RTSA HW 3 Question 2"
+output: html_notebook
+---
+
+```{r}
+# Loading the necessary libraries
+library(readxl)
+library(car)
+
+# Loading the dataset and previewing the first few rows
+DataSet = read_excel(file.choose())
+head(DataSet)
+```
+The variables signify the following attributes:
+#X1 Relative Compactness
+#X2 Surface Area
+#X3 Wall Area
+#X4 Roof Area
+#X5 Overall Height
+#X6 Orientation
+#X7 Glazing Area
+#X8 Glazing Area Distribution
+#Y1 Heating Load (response)
+#Y2 Cooling Load (response)
+
+```{r}
+## Renaming the variables
+#names(DataSet) = c("RelComp", "SAr", "WAr", "RAr", "OvHeight", "Ori", "GlzAr", "GlzArDist", "HLoad", "CLoad")
+#names(DataSet)
+```
+```{r}
+# Creating a linear regression model
+model_1 = lm(Y2 ~ X1 + X2 + X3  + X5 + X6 + X7 + X8, data = DataSet)
+summary(model_1)
+```
+We can see that the R-square value of the model is 0.8878.
+```{r}
+# Hypothesis Test 1
+a <- c(1, 0, 0, 0, 0, 0, 0, 0)
+c <- c(0)
+linearHypothesis(model_1, a, c)
+```
+```{r}
+# Hypothesis Test 2
+linearHypothesis(model_1, "1*X2 = 0", data = DataSet)
+```
+```{r}
+# Hypothesis Test 3
+a <- c(0, 1, -1, 0, 0, 0, 0, 0)
+c <- c(0)
+linearHypothesis(model_1, a, c, data = DataSet)
+```
+```{r}
+# Hypothesis Test 4
+a <- matrix(c(0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0), nrow = 2)
+c <- c(0, 0)
+linearHypothesis(model_1, a, c, data = DataSet)
+```
